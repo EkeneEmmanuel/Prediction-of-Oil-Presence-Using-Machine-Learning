@@ -399,13 +399,13 @@ The project was implemented in Python using the following technologies:
 | SciPy | Statistical analysis |
 
 
-## 13. Acknowledgement
+## 8. Acknowledgement
 
 This project was developed as part of the **Society of Petroleum Engineers (SPE) DSEATS Africa Region Datathon 2026**.
 
 The work reflects a collaborative effort to integrate petroleum engineering knowledge, geological interpretation, and data science in addressing a practical subsurface exploration problem.
 
-## 14. Disclaimer
+## 9. Disclaimer
 
 This project is an academic and datathon machine learning exercise. Its predictions should not be interpreted as definitive evidence of hydrocarbon presence or used as standalone inputs for actual drilling investment decisions.
 
