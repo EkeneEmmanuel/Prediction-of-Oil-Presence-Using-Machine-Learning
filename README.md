@@ -145,17 +145,18 @@ Identifies shale formations.
 
 Captures the interaction between seismic evidence and trap presence.
 
-\[
-Seismic\_x\_Trap = Seismic\_Score \times Has\_Trap
-\]
+$$
+\text{Seismic x Trap} = \text{Seismic Score} \times \text{Has Trap}
+$$
+
 
 **4. Seismic Squared**
 
 Captures potential nonlinear relationships in seismic evidence.
 
-\[
-Seismic\_Squared = Seismic\_Score^2
-\]
+$$
+\text{Seismic Squared} = (\text{Seismic Score})^2
+$$
 
 #### 4.2.3 Model Development
 
@@ -191,9 +192,10 @@ Rather than relying exclusively on the original dataset features, additional fea
 
 Permeability values exhibited a wide numerical range. A logarithmic transformation was introduced to compress the distribution.
 
-\[
-Log\_Permeability = \ln(1 + Permeability)
-\]
+$$
+\text{Log Permeability} = \ln(1 + \text{Permeability})
+$$
+
 
 #### 4.3.2 Compaction Resistance Index (CRI)
 
@@ -201,9 +203,9 @@ Reservoir porosity can decrease with increasing burial depth because of compacti
 
 The following feature was introduced:
 
-\[
-CRI = \frac{Porosity/100}{Estimated\_Reservoir\_Depth}
-\]
+$$
+CRI = \frac{\text{Porosity (fraction)}}{\text{Estimated Reservoir Depth}}
+$$
 
 This feature represents the relationship between porosity and estimated reservoir depth.
 
@@ -235,9 +237,10 @@ Additionally, shale observations with permeability values exceeding 100 mD were 
 
 The Trap Confidence Index integrates seismic evidence with the assigned trap-type weight.
 
-\[
-TCI = Seismic\_Score \times W_{Trap}
-\]
+$$
+\text{Trap Confidence Index} = (\text{Seismic Score}) \cdot (W_{\text{Trap Type}})
+$$
+
 
 This feature captures the combined contribution of seismic support and trap classification.
 
@@ -245,15 +248,11 @@ This feature captures the combined contribution of seismic support and trap clas
 
 Charge potential is represented using an inverse-distance transformation:
 
-\[
-Charge = \frac{1}{Proximity\_to\_Oil\_Field + 1}
-\]
+$$
+\text{Charge Potential} = \frac{1}{\text{Proximity to Oil Field}  + 1}
+$$
 
-The final Chance of Success feature integrates rock type, trap type, and proximity information:
-
-\[
-COS = W_{Rock} \times W_{Trap} \times Charge
-\]
+The final Chance of Success feature is a multiplication of rock type weight, trap type weight, and charge potential:
 
 The categorical weights are learned from the reference training data rather than being manually assigned.
 
@@ -278,20 +277,46 @@ The hyperparameters were selected through an Optuna optimization process during 
 
 ### Stage 4: Model Comparison and Drilling Prioritization
 
-The final stage compares both approaches using out-of-fold predictions generated from identical five-fold splits.
+Accuracy alone is insufficient for evaluating an imbalanced hydrocarbon classification problem.
 
-The comparison considers:
+The project therefore uses several complementary evaluation metrics.
 
-- Accuracy
-- Precision
-- Recall
-- F1-score
-- ROC-AUC
-- PR-AUC
+| Metric | Interpretation |
+|---|---|
+| Accuracy | Overall proportion of correct predictions |
+| Precision | Proportion of predicted oil locations that actually contain oil |
+| Recall | Proportion of actual oil locations correctly identified |
+| F1-score | Harmonic mean of precision and recall |
+| ROC-AUC | Ability to distinguish between oil and dry locations |
+| PR-AUC | Precision-recall performance, particularly useful for imbalanced data |
+**Standard Machine Learning Results:**
 
-The models are also compared on the full training population and the subset of observations with available seismic measurements.
+|	Accuracy | Precision	Recall |F1	| ROC-AUC	| PR-AUC | Accuracy (rows with seismic)
+|---|---|---|---|---|---|
+| HistGradientBoosting	| 0.8130 | 0.7403	| 0.5030	| 0.5990	| 0.8089	| 0.6796	| 0.8779 |
+| XGBoost	| 0.8100	| 0.7240	| 0.5102	| 0.5986	| 0.8132	| 0.6807	| 0.8815 |
+| Random Forest	| 0.8097	| 0.6985 | 0.5534	| 0.6175	| 0.8033	| 0.6686	| 0.8872 |
+| Logistic Regression	| 0.8067	| 0.7976	| 0.4070 | 0.5390	| 0.7917	| 0.6546	| 0.8651 |
+| Extra Trees	| 0.8043	| 0.6847	| 0.5474	| 0.6084	| 0.7877	| 0.6448	| 0.8759 |
+| LightGBM	| 0.8043	| 0.6952	| 0.5258	| 0.5988	| 0.8084	| 0.6762	| 0.8826 |
+| Neural Net (MLP) |	0.8020	| 0.7786	| 0.4010	| 0.5293	| 0.7963	| 0.6558	| 0.8564 |
 
-The final test predictions from both approaches are compared to examine their agreement.
+
+**Physics Informed Machine Learning Results:**
+
+| Metrics | TRAIN (all rows)	| VALIDATION (all rows) |
+|---|---|---|
+| Accuracy	| 0.8517	| 0.8450 |
+| Precision	| 0.8555	| 0.8558
+| Recall | 0.5601	| 0.5329 |
+| Specificity	| 0.9637	| 0.9654 |
+| F1 Score	| 0.6770	| 0.6568 |
+| TP	| 373.0000	| 89.0000 |
+| TN	| 1671.0000	| 418.0000 |
+| FP	| 63.0000	| 15.0000 |
+| FN	| 293.0000 | 78.0000 |
+| ROC-AUC	| 0.9064	| 0.8396 |
+| PR-AUC | 0.8078	| 0.7628 |
 
 #### Drilling Prioritization
 
@@ -311,22 +336,7 @@ This provides a probability-based framework for organizing exploration prospects
 
 ---
 
-## 5. Model Evaluation and Interpretability
-
-Accuracy alone is insufficient for evaluating an imbalanced hydrocarbon classification problem.
-
-The project therefore uses several complementary evaluation metrics.
-
-| Metric | Interpretation |
-|---|---|
-| Accuracy | Overall proportion of correct predictions |
-| Precision | Proportion of predicted oil locations that actually contain oil |
-| Recall | Proportion of actual oil locations correctly identified |
-| F1-score | Harmonic mean of precision and recall |
-| ROC-AUC | Ability to distinguish between oil and dry locations |
-| PR-AUC | Precision-recall performance, particularly useful for imbalanced data |
-
-### Model Interpretability with SHAP
+## 5. Model Interpretability
 
 SHAP (SHapley Additive exPlanations) is used to investigate the features influencing model predictions.
 
